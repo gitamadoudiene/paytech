@@ -1,4 +1,4 @@
-// Charge les variables d'environnement depuis le fichier .env
+// Charge les variables d'environnement depuis le fichier .env (pour le développement local)
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -7,14 +7,26 @@ const path = require("path");
 
 const app = express();
 
+// --- Configuration CORS ---
+// Récupère l'URL du frontend depuis les variables d'environnement
+// En production, cette variable sera définie sur Render.
+// En développement local, elle peut être définie dans .env ou par défaut à localhost.
+const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:8080";
+
 // Middleware pour permettre les requêtes cross-origin (CORS)
 // Ceci est crucial pour que votre frontend puisse communiquer avec ce backend
-app.use(cors());
+app.use(cors({
+  origin: allowedOrigin, // Autorise uniquement l'origine spécifiée
+  optionsSuccessStatus: 200 // Pour la compatibilité des anciens navigateurs
+}));
+
 // Middleware pour parser les corps de requête JSON
 app.use(express.json());
+
 // Middleware pour servir les fichiers statiques (si vous avez un dossier 'public' pour votre frontend)
-// Si votre frontend est servi séparément (comme un simple fichier HTML), cette ligne est moins critique ici.
-app.use(express.static(path.join(__dirname, "public"))); 
+// Cette ligne est généralement utile si votre backend sert aussi le frontend.
+// Dans votre cas, avec Vercel pour le frontend, cette ligne est moins critique ici.
+app.use(express.static(path.join(__dirname, "public")));
 
 // Route POST pour initier un paiement via PayTech
 app.post("/api/pay", async (req, res) => {
@@ -37,16 +49,15 @@ app.post("/api/pay", async (req, res) => {
       ref_command: `CMD-${Date.now()}`, // Référence unique pour la commande
       command_name: "Paiement boutique", // Nom de la commande affiché à l'utilisateur
       env: "test", // Environnement de PayTech : "test" pour le développement, "prod" pour la production
-      
-      // IMPORTANT : Remplacez ces URLs par les vôtres !
+
+      // IMPORTANT : Ces URLs sont maintenant récupérées depuis les variables d'environnement !
       // ipn_url: URL pour les notifications de paiement instantanées de PayTech (nécessite un endpoint sur votre serveur)
-      // Pour les tests, vous pouvez utiliser un service comme webhook.site pour obtenir une URL temporaire.
-      ipn_url: "https://webhook.site/YOUR_UNIQUE_WEBHOOK_ID", // <-- REMPLACEZ CECI !
+      ipn_url: process.env.IPN_URL, // Doit être une URL accessible publiquement
       // success_url: URL vers laquelle l'utilisateur sera redirigé après un paiement réussi
-      success_url: "http://localhost:8080/success.html", // <-- REMPLACEZ CECI par l'URL de votre page de succès frontend
+      success_url: process.env.SUCCESS_URL, // L'URL de votre frontend Vercel pour la page de succès
       // cancel_url: URL vers laquelle l'utilisateur sera redirigé s'il annule le paiement
-      cancel_url: "http://localhost:8080/cancel.html", // <-- REMPLACEZ CECI par l'URL de votre page d'annulation frontend
-      
+      cancel_url: process.env.CANCEL_URL, // L'URL de votre frontend Vercel pour la page d'annulation
+
       // Champ personnalisé pour stocker des informations supplémentaires
       custom_field: JSON.stringify({
         client_name: clientName || "Client inconnu",
@@ -57,7 +68,7 @@ app.post("/api/pay", async (req, res) => {
     // En-têtes de la requête, incluant les clés API PayTech
     const headers = {
       "Content-Type": "application/json",
-      // Les clés API sont récupérées depuis les variables d'environnement (fichier .env)
+      // Les clés API sont récupérées depuis les variables d'environnement (fichier .env ou Render)
       API_KEY: process.env.PAYTECH_API_KEY,
       API_SECRET: process.env.PAYTECH_API_SECRET,
     };
@@ -94,7 +105,7 @@ app.post("/api/pay", async (req, res) => {
 });
 
 // Définit le port d'écoute du serveur
-const PORT = process.env.PORT || 3001; // Utilise la variable d'environnement PORT ou 3001 par défaut
+const PORT = process.env.PORT || 3001; // Utilise la variable d'environnement PORT (fournie par Render) ou 3001 par défaut
 // Démarre le serveur et écoute sur toutes les interfaces réseau (0.0.0.0)
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Serveur démarré sur http://0.0.0.0:${PORT}`);
