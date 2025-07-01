@@ -271,7 +271,7 @@
         "https://senachat.com/public/uploads/all/CvxLywHxepKCLsNYR3VSOctKTd8UhneM4LtbnocE.jpg",
         "https://images.coinafrique.com/785409_uploaded_image1_1564168540.21.png",
         "https://diaytar.com/wp-content/uploads/sn221/chaussure-orthop-dique-sandale-orthop-dique-thiarakh_397_dakar_senegal.png",
-        "Chaussure.png",
+        "https://senachat.com/public/uploads/all/CvxLywHxepKCLsNYR3VSOctKTd8UhneM4LtbnocE.jpg",
       ];
 
       const products = [];
@@ -411,9 +411,7 @@
         };
 
         try {
-          // CORRECTION ICI : L'URL du backend doit être correcte.
-          // Remplacez "https://paytech.onrender.com" par l'URL réelle de votre backend Render.
-          const response = await fetch("https://paytech.onrender.com/api/pay", {
+          const response = await fetch("http://localhost:3001/api/pay", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(paymentData),
