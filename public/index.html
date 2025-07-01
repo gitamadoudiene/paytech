@@ -411,7 +411,9 @@
         };
 
         try {
-          const response = await fetch("http://https://paytech.onrender.com/api/pay", {
+          // CORRECTION ICI : L'URL du backend doit être correcte.
+          // Remplacez "https://paytech.onrender.com" par l'URL réelle de votre backend Render.
+          const response = await fetch("https://paytech.onrender.com/api/pay", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(paymentData),
