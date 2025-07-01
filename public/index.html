@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Omar Gaye Business Boutique</title>
+    <style>
+      /* Styles généraux pour réinitialiser le CSS par défaut du navigateur */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Styles du corps de la page */
+      body {
+        font-family: "Segoe UI", sans-serif; /* Police de caractères moderne */
+        background-color: #f5f5f5; /* Couleur de fond légère */
+        color: #333; /* Couleur de texte foncée */
+      }
+
+      /* Styles de la barre de navigation */
+      nav {
+        background-color: #222; /* Fond sombre pour la navigation */
+        color: #fff; /* Texte blanc */
+        padding: 1rem 2rem; /* Espacement interne */
+        display: flex; /* Utilisation de Flexbox pour l'alignement */
+        align-items: center; /* Alignement vertical au centre */
+        justify-content: space-between; /* Espacement entre les éléments */
+        position: relative; /* Pour positionner le panier déroulant */
+        flex-wrap: wrap; /* Permet aux éléments de passer à la ligne sur petits écrans */
+      }
+
+      /* Titre de la boutique dans la navigation */
+      nav h1 {
+        font-size: 1.5rem;
+      }
+
+      /* Conteneur de l'icône du panier et du nombre d'articles */
+      #cart-container {
+        position: relative;
+        cursor: pointer; /* Indique que c'est cliquable */
+        margin-top: 0.5rem; /* Petit espacement en haut pour les petits écrans */
+      }
+
+      /* Icône du panier */
+      #cart-icon {
+        font-size: 1.8rem;
+        color: #fff;
+        position: relative;
+      }
+
+      /* Compteur d'articles dans le panier (petit cercle rouge) */
+      #cart-count {
+        position: absolute;
+        top: -8px;
+        right: -12px;
+        background: red; /* Fond rouge */
+        color: white; /* Texte blanc */
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 50%; /* Forme circulaire */
+        display: none; /* Caché par défaut */
+        user-select: none; /* Empêche la sélection du texte */
+      }
+
+      /* Panier déroulant */
+      .cart-dropdown {
+        display: none; /* Caché par défaut */
+        position: absolute;
+        right: 0; /* Alignement à droite */
+        top: 2.8rem; /* Positionnement sous l'icône */
+        background: #fff; /* Fond blanc */
+        color: #333; /* Texte foncé */
+        width: 320px; /* Largeur fixe */
+        max-height: 400px; /* Hauteur maximale avec défilement */
+        overflow-y: auto; /* Défilement vertical si nécessaire */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Ombre légère */
+        border-radius: 6px; /* Coins arrondis */
+        padding: 1rem; /* Espacement interne */
+        z-index: 1000; /* Assure qu'il est au-dessus des autres éléments */
+      }
+
+      .cart-dropdown h2 {
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      /* Liste des articles dans le panier */
+      .cart-items {
+        list-style: none; /* Supprime les puces de liste */
+        padding-left: 0;
+        max-height: 250px;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+      }
+
+      .cart-items li {
+        margin-bottom: 0.5rem;
+      }
+
+      /* Total du panier */
+      .cart-total {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+      }
+
+      /* Bouton Payer dans le panier */
+      .pay-button {
+        width: 100%; /* Pleine largeur */
+        padding: 0.7rem 1.5rem;
+        background-color: #4caf50; /* Vert */
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      /* Style du bouton Payer lorsqu'il est désactivé */
+      .pay-button:disabled {
+        background-color: #ccc; /* Gris */
+        cursor: not-allowed; /* Curseur "interdit" */
+      }
+
+      /* Grille des produits */
+      .products {
+        display: grid; /* Utilisation de CSS Grid */
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(200px, 1fr)
+        ); /* Colonnes responsives */
+        gap: 1rem; /* Espacement entre les produits */
+        padding: 2rem; /* Espacement autour de la grille */
+      }
+
+      /* Carte d'un produit individuel */
+      .product {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .product img {
+        max-width: 100%; /* L'image ne dépasse pas la largeur de son conteneur */
+        height: auto; /* Maintient le ratio de l'image */
+        border-radius: 4px;
+      }
+
+      .product-name {
+        font-weight: bold;
+        margin: 0.5rem 0;
+      }
+
+      .product-price {
+        color: #388e3c; /* Vert foncé */
+        margin-bottom: 0.5rem;
+      }
+
+      /* Bouton "Ajouter au panier" */
+      .add-to-cart {
+        background-color: #ff9800; /* Orange */
+        color: #fff;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      /* Superposition du modal (arrière-plan sombre) */
+      .modal-overlay {
+        position: fixed; /* Fixé par rapport à la fenêtre d'affichage */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6); /* Fond semi-transparent */
+        display: none; /* Caché par défaut */
+        align-items: center; /* Centrage vertical */
+        justify-content: center; /* Centrage horizontal */
+        z-index: 2000; /* Au-dessus de tout */
+      }
+
+      /* Contenu du modal */
+      .modal {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        max-width: 400px; /* Largeur maximale */
+        width: 90%; /* S'adapte à la largeur de l'écran */
+      }
+
+      /* Boutons dans le modal */
+      .modal-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+        flex-wrap: wrap; /* Permet aux boutons de passer à la ligne */
+        gap: 1rem; /* Espacement entre les boutons */
+      }
+
+      /* Bouton "Confirmer" dans le modal */
+      .modal .confirm {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      /* Bouton "Annuler" dans le modal */
+      .modal .cancel {
+        background-color: #ccc;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      /* Messages de succès et d'erreur */
+      .message.success {
+        color: green;
+        margin-top: 1rem;
+      }
+
+      .message.error {
+        color: red;
+        margin-top: 1rem;
+      }
+
+      /* Media queries pour la responsivité sur mobile */
+      @media (max-width: 600px) {
+        nav {
+          flex-direction: column; /* Les éléments de la nav s'empilent */
+          align-items: flex-start; /* Alignement à gauche */
+        }
+
+        .cart-dropdown {
+          width: 90vw !important; /* Prend 90% de la largeur de la fenêtre */
+          left: 5vw !important; /* Centrage horizontal */
+          right: auto !important;
+        }
+
+        .modal {
+          width: 90vw; /* Le modal prend 90% de la largeur de la fenêtre */
+          padding: 1.5rem;
+        }
+
+        .modal-buttons {
+          flex-direction: column; /* Les boutons du modal s'empilent */
+          align-items: stretch; /* S'étirent sur toute la largeur */
+        }
+
+        .modal-buttons button {
+          width: 100%; /* Les boutons prennent toute la largeur */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <h1>Josephine Business Boutique</h1>
+      <div id="cart-container" title="Voir le panier">
+        <span id="cart-icon"> 🛒 <span id="cart-count">0</span> </span>
+        <div class="cart-dropdown" id="cart-dropdown">
+          <h2>Panier</h2>
+          <ul class="cart-items" id="cart-items"></ul>
+          <div class="cart-total" id="cart-total">Total: 0 FCFA</div>
+          <button class="pay-button" id="pay-button" disabled>Payer</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="products" id="products"></div>
+
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal">
+        <h3>Confirmer le paiement</h3>
+        <p>Voulez-vous payer <span id="modal-total"></span> ?</p>
+        <div class="modal-buttons">
+          <button class="cancel" id="modal-cancel">Annuler</button>
+          <button class="confirm" id="modal-confirm">Payer</button>
+        </div>
+        <div class="message" id="modal-message"></div>
+      </div>
+    </div>
+
+    <script>
+      // Tableau des URLs d'images de chaussures.
+      // Ajout d'une image de remplacement générique au cas où les URL spécifiques ne seraient pas disponibles.
+      const shoeImages = [
+        "https://www.africabaie.com/wp-content/uploads/2023/07/1688962730931-247x296.jpg",
+        "https://senachat.com/public/uploads/all/CvxLywHxepKCLsNYR3VSOctKTd8UhneM4LtbnocE.jpg",
+        "https://images.coinafrique.com/785409_uploaded_image1_1564168540.21.png",
+        "https://diaytar.com/wp-content/uploads/sn221/chaussure-orthop-dique-sandale-orthop-dique-thiarakh_397_dakar_senegal.png",
+        "https://placehold.co/247x296/E0E0E0/333333?text=Chaussure", // Image de remplacement
+      ];
+
+      // Génération de 100 produits fictifs
+      const products = [];
+      for (let i = 1; i <= 100; i++) {
+        const price = Math.floor(Math.random() * 81) + 120; // Prix aléatoire entre 120 et 200
+        products.push({
+          id: i,
+          name: `Chaussure Africaine ${i}`,
+          price,
+          img: shoeImages[(i - 1) % shoeImages.length], // Attribution cyclique des images
+        });
+      }
+
+      // Récupération des éléments du DOM
+      const productsContainer = document.getElementById("products");
+      const cartItemsContainer = document.getElementById("cart-items");
+      const cartTotalContainer = document.getElementById("cart-total");
+      const payButton = document.getElementById("pay-button");
+      const modalOverlay = document.getElementById("modal-overlay");
+      const modalTotal = document.getElementById("modal-total");
+      const modalCancel = document.getElementById("modal-cancel");
+      const modalConfirm = document.getElementById("modal-confirm");
+      const modalMessage = document.getElementById("modal-message");
+
+      const cartContainer = document.getElementById("cart-container");
+      const cartDropdown = document.getElementById("cart-dropdown");
+      const cartCount = document.getElementById("cart-count");
+
+      let cart = []; // Tableau pour stocker les articles du panier
+
+      /**
+       * Met à jour l'affichage du nombre total d'articles dans le panier.
+       */
+      function updateCartCount() {
+        const totalCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+        if (totalCount > 0) {
+          cartCount.style.display = "inline-block";
+          cartCount.textContent = totalCount;
+        } else {
+          cartCount.style.display = "none";
+        }
+      }
+
+      /**
+       * Rend la liste des produits sur la page.
+       */
+      function renderProducts() {
+        productsContainer.innerHTML = ""; // Vide le conteneur avant de rendre
+        products.forEach((product) => {
+          const div = document.createElement("div");
+          div.className = "product";
+          div.innerHTML = `
+            <img src="${product.img}" alt="${product.name}" onerror="this.onerror=null;this.src='https://placehold.co/247x296/E0E0E0/333333?text=Image+Non+Trouvée';">
+            <div class="product-name">${product.name}</div>
+            <div class="product-price">${product.price} FCFA</div>
+            <button class="add-to-cart" data-id="${product.id}">Ajouter au panier</button>
+          `;
+          productsContainer.appendChild(div);
+        });
+      }
+
+      /**
+       * Rend les articles dans le panier et met à jour le total.
+       */
+      function renderCart() {
+        cartItemsContainer.innerHTML = ""; // Vide le conteneur du panier
+        if (cart.length === 0) {
+          cartItemsContainer.innerHTML = "<li>Votre panier est vide</li>";
+          cartTotalContainer.textContent = "Total: 0 FCFA";
+          payButton.disabled = true; // Désactive le bouton Payer si le panier est vide
+          updateCartCount();
+          return;
+        }
+
+        let total = 0;
+        cart.forEach((item) => {
+          total += item.price * item.quantity;
+          const li = document.createElement("li");
+          li.textContent = `${item.name} x${item.quantity} - ${
+            item.price * item.quantity
+          } FCFA`;
+          cartItemsContainer.appendChild(li);
+        });
+        cartTotalContainer.textContent = `Total: ${total} FCFA`;
+        payButton.disabled = false; // Active le bouton Payer
+        updateCartCount();
+      }
+
+      // Écouteur d'événements pour ajouter des produits au panier
+      productsContainer.addEventListener("click", (e) => {
+        if (e.target.classList.contains("add-to-cart")) {
+          const id = Number(e.target.getAttribute("data-id"));
+          const product = products.find((p) => p.id === id);
+          if (!product) return;
+
+          const cartItem = cart.find((item) => item.id === id);
+          if (cartItem) {
+            cartItem.quantity++; // Incrémente la quantité si l'article est déjà là
+          } else {
+            cart.push({ ...product, quantity: 1 }); // Ajoute l'article avec une quantité de 1
+          }
+          renderCart(); // Met à jour l'affichage du panier
+        }
+      });
+
+      // Basculer la visibilité du panier déroulant
+      document.getElementById("cart-icon").addEventListener("click", (e) => {
+        e.stopPropagation(); // Empêche le clic sur le document de le fermer immédiatement
+        cartDropdown.style.display =
+          cartDropdown.style.display === "block" ? "none" : "block";
+      });
+
+      // Fermer le panier déroulant lorsque l'on clique n'importe où ailleurs sur le document
+      document.addEventListener("click", (e) => {
+        // Ferme uniquement si le clic est en dehors du conteneur du panier lui-même
+        if (!cartContainer.contains(e.target)) {
+          cartDropdown.style.display = "none";
+        }
+      });
+
+      // Empêcher le panier déroulant de se fermer lorsque l'on clique à l'intérieur
+      cartDropdown.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      // Afficher le modal de confirmation de paiement
+      payButton.addEventListener("click", () => {
+        const total = cart.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0
+        );
+        modalTotal.textContent = `${total} FCFA`;
+        modalMessage.textContent = ""; // Efface les messages précédents
+        modalOverlay.style.display = "flex"; // Affiche le modal
+      });
+
+      // Fermer le modal de confirmation de paiement
+      modalCancel.addEventListener("click", () => {
+        modalOverlay.style.display = "none"; // Cache le modal
+      });
+
+      // Gérer la confirmation du paiement
+      modalConfirm.addEventListener("click", async () => {
+        modalMessage.textContent = "Traitement du paiement...";
+        modalConfirm.disabled = true; // Désactive les boutons pendant le traitement
+        modalCancel.disabled = true;
+
+        const total = cart.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0
+        );
+
+        const paymentData = {
+          amount: total,
+          clientName: "Client Test", // À remplacer par une entrée utilisateur réelle
+          clientPhone: "781646424", // À remplacer par une entrée utilisateur réelle
+        };
+
+        try {
+          // *** IMPORTANT : REMPLACEZ 'YOUR_DEPLOYED_BACKEND_URL' par l'URL réelle de votre backend déployé ! ***
+          // Par exemple : 'https://votre-backend-josephine.onrender.com'
+          const response = await fetch(
+            "https://mon-backend-josephine.onrender.com",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(paymentData),
+            }
+          );
+
+          const data = await response.json();
+
+          if (response.ok) {
+            modalMessage.textContent = "Paiement réussi ! Redirection...";
+            modalMessage.className = "message success";
+            cart = []; // Vide le panier après un paiement réussi
+            renderCart(); // Met à jour l'affichage du panier vide
+            setTimeout(() => {
+              // Redirige vers l'URL de succès ou une page de confirmation
+              window.location.href = data.redirect_url || "/";
+            }, 1500);
+          } else {
+            // Si la réponse n'est pas OK (statut d'erreur), lance une erreur avec le message du backend
+            throw new Error(data.message || "Erreur lors du paiement");
+          }
+        } catch (err) {
+          modalMessage.textContent = "Erreur: " + err.message;
+          modalMessage.className = "message error";
+          // Réactive les boutons en cas d'erreur
+          modalConfirm.disabled = false;
+          modalCancel.disabled = false;
+        }
+      });
+
+      // Rendu initial des produits et du panier au chargement de la page
+      renderProducts();
+      renderCart();
+    </script>
+  </body>
+</html>
